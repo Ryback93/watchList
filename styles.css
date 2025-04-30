@@ -44,13 +44,6 @@ body {
     background-blend-mode: normal;
 }
 
-/* .theatre-icon {
-    height: 90px;
-    width: 90px;
-    opacity: 0.15;
-    z-index: 0;
-} */
-
 /* Layering */
 .watchlist,
 .search-container,
@@ -181,6 +174,41 @@ body {
     border-radius: 4px;
     transition: all 0.3s ease;
     box-shadow: 0 0 5px rgba(255,255,255,0.3);
+}
+
+.watchlist-button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 215, 0, 0.6);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%, -50%);
+    transform-origin: 50% 50%;
+}
+
+.watchlist-button:active::after {
+    animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0) translate(-50%, -50%);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(20, 20) translate(-50%, -50%);
+        opacity: 0;
+    }
+}
+
+.watchlist-button.added {
+    background-color: #FFD700;
+    color: #121212;
+    border-color: #FFD700;
 }
 
 .watchlist-button:hover {

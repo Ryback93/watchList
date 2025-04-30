@@ -87,9 +87,9 @@ function renderMovies(movies) {
             button.textContent = "+ Watchlist"
             button.className = "watchlist-button"
             button.dataset.id = details.imdbID
-            button.addEventListener("click", () => {
-                addToWatchlist(details.imdbID)
-            })
+            button.addEventListener("click", (e) => {
+            addToWatchlist(details.imdbID, e.target) // Pass both ID and button element
+})
 
             const plot = document.createElement("p")
             plot.textContent = details.Plot
@@ -214,20 +214,35 @@ function createMovieCard(details) {
 
 
 
-// ====== Local Storage Functions ======   
-function addToWatchlist(imdbID) {
-    const userId = "defaultUser"; // You can replace with actual user auth ID if needed
+// ====== Firebase Storage Functions ======   
+function addToWatchlist(imdbID, button) {
+    const userId = "defaultUser";
     const watchlistRef = ref(database, `watchlists/${userId}/${imdbID}`);
 
+    // Visual feedback immediately
+    button.classList.add('added');
+    button.textContent = '✓ Added';
+    
     set(watchlistRef, true)
         .then(() => {
-            alert('Added to watchlist')
+            // Keep the visual state for 2 seconds
+            setTimeout(() => {
+                button.classList.remove('added');
+                button.textContent = '+ Watchlist';
+            }, 2000);
         })
         .catch(error => {
-            console.error("Firebase add error:", error)
-            alert('Failed to add to watchlist')
+            button.textContent = '✖ Error';
+            console.error("Firebase add error:", error);
+            setTimeout(() => {
+                button.textContent = '+ Watchlist';
+            }, 2000);
         });
 }
+
+button.addEventListener("click", (e) => {
+    addToWatchlist(details.imdbID, e.target);
+});
 
 function removeFromWatchlist(imdbID) {
     const userId = "defaultUser";
