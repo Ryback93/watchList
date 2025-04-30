@@ -1,3 +1,28 @@
+// ====== firebase setup ======
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getDatabase,
+         ref, 
+         set, 
+         get, 
+         remove, 
+         child } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+const firebaseConfig = {
+   apiKey: "AIzaSyAm4yfpdT-xHBMjto-Yz8xDPXXhPBLNDIQ",
+   authDomain: "watchlist-508ca.firebaseapp.com",
+   databaseURL: "https://watchlist-508ca-default-rtdb.firebaseio.com/",
+   projectId: "watchlist-508ca",
+   storageBucket: "watchlist-508ca.firebasestorage.app",
+   messagingSenderId: "331078386859",
+   appId: "1:331078386859:web:6181d8eb5fa56ad93f23ee"
+}
+
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app)
+
+console.log(database)
+
+
 // ====== DOM Elements ======
 const searchInput = document.getElementById("search-input")
 const searchButton = document.getElementById("search-button")
@@ -85,76 +110,94 @@ if (window.location.pathname.includes ("watchlist.html")) {
 }
 
 function displayWatchlist() {
-    const watchlist = JSON.parse(localStorage.getItem('watchlist')) || []
+    const userId = "defaultUser";
+    const watchlistRef = ref(database, `watchlists/${userId}`);
 
-    if (watchlist.length === 0) {
-        watchlistContainer.innerHTML = '<p style="color: white;">Your watchlist is empty.</p>'
-        return
-    }
+    get(watchlistRef)
+        .then(snapshot => {
+            const data = snapshot.val();
+            if (!data) {
+                watchlistContainer.innerHTML = '<p style="color: white;">Your watchlist is empty.</p>';
+                return;
+            }
 
-    watchlistContainer.innerHTML = ''
+            const movieIDs = Object.keys(data);
+            watchlistContainer.innerHTML = '';
 
-    watchlist.forEach(id => {
-        fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${id}`)
-            .then(res => res.json())
-            .then(details => {
-                const movieCard = document.createElement("div")
-                movieCard.className = "movie-card"
-                
-                const poster = document.createElement("img")
-                poster.src = details.Poster !== "N/A" ? details.Poster : "images/placeholder.png"
-                poster.alt = details.Title
-                poster.className = "movie-poster"
+            movieIDs.forEach(id => {
+                fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${id}`)
+                    .then(res => res.json())
+                    .then(details => {
+                        const movieCard = document.createElement("div");
+                        movieCard.className = "movie-card";
+                        
+                        const poster = document.createElement("img");
+                        poster.src = details.Poster !== "N/A" ? details.Poster : "images/placeholder.png";
+                        poster.alt = details.Title;
+                        poster.className = "movie-poster";
 
-                const infoDiv = document.createElement("div")
-                infoDiv.className = "movie-info"
+                        const infoDiv = document.createElement("div");
+                        infoDiv.className = "movie-info";
 
-                const title = document.createElement("h3")
-                title.textContent = `${details.Title} ⭐ ${details.imdbRating}`
+                        const title = document.createElement("h3");
+                        title.textContent = `${details.Title} ⭐ ${details.imdbRating}`;
 
-                const meta = document.createElement("p")
-                meta.textContent = `${details.Runtime} | ${details.Genre}`
+                        const meta = document.createElement("p");
+                        meta.textContent = `${details.Runtime} | ${details.Genre}`;
 
-                const button = document.createElement("button")
-                button.textContent = "Remove"
-                button.className = "watchlist-button"
-                button.dataset.id = details.imdbID
-                button.addEventListener("click", () => {
-                    removeFromWatchlist(details.imdbID)
-                    movieCard.remove()
-                    if (watchlistContainer.children.length === 0) {
-                        watchlistContainer.innerHTML = '<p style="color: white;">Your watchlist is empty.</p>'
-                    }
-                })
+                        const button = document.createElement("button");
+                        button.textContent = "Remove";
+                        button.className = "watchlist-button";
+                        button.dataset.id = details.imdbID;
+                        button.addEventListener("click", () => {
+                            removeFromWatchlist(details.imdbID);
+                            movieCard.remove();
+                            if (watchlistContainer.children.length === 0) {
+                                watchlistContainer.innerHTML = '<p style="color: white;">Your watchlist is empty.</p>';
+                            }
+                        });
 
-                const plot = document.createElement("p")
-                plot.textContent = details.Plot
-                plot.style.marginTop = "10px"
+                        const plot = document.createElement("p");
+                        plot.textContent = details.Plot;
+                        plot.style.marginTop = "10px";
 
-                infoDiv.append(title, meta, button, plot)
-                movieCard.append(poster, infoDiv)
-                watchlistContainer.appendChild(movieCard)
-
-            })    
-
-    })
+                        infoDiv.append(title, meta, button, plot);
+                        movieCard.append(poster, infoDiv);
+                        watchlistContainer.appendChild(movieCard);
+                    });
+            });
+        })
+        .catch(error => {
+            console.error("Firebase fetch error:", error);
+        });
 }
+
 
 
 // ====== Local Storage Functions ======   
 function addToWatchlist(imdbID) {
-    let watchlist = JSON.parse(localStorage.getItem('watchlist')) || []
-    if (!watchlist.includes(imdbID)) {
-        watchlist.push(imdbID)
-        localStorage.setItem('watchlist', JSON.stringify(watchlist))
-        alert('Added to watchlist')
-    } else {
-        alert('Already in watchlist')
-    }
+    const userId = "defaultUser"; // You can replace with actual user auth ID if needed
+    const watchlistRef = ref(database, `watchlists/${userId}/${imdbID}`);
+
+    set(watchlistRef, true)
+        .then(() => {
+            alert('Added to watchlist')
+        })
+        .catch(error => {
+            console.error("Firebase add error:", error)
+            alert('Failed to add to watchlist')
+        });
 }
 
 function removeFromWatchlist(imdbID) {
-    let watchlist = JSON.parse(localStorage.getItem('watchlist')) || []
-    watchlist = watchlist.filter(id => id !== imdbID)
-    localStorage.setItem('watchlist', JSON.stringify(watchlist))
+    const userId = "defaultUser";
+    const watchlistRef = ref(database, `watchlists/${userId}/${imdbID}`);
+
+    remove(watchlistRef)
+        .then(() => {
+            console.log('Removed from watchlist')
+        })
+        .catch(error => {
+            console.error("Firebase remove error:", error)
+        });
 }
