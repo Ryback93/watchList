@@ -160,7 +160,18 @@ body {
 .movie-info {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    /* justify-content: space-between; */
+    gap: 0.5rem;
+}
+
+.movie-info h3 {
+    margin: 0;
+    line-height: 1.3;
+}
+
+.movie-info p {
+    margin: 0;
+    font-size: 0.9rem;
 }
 
 /* ================== Buttons ================== */
