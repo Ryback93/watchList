@@ -40,6 +40,17 @@ if (searchButton) {
 
 }
 
+if (searchInput) {
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            const searchTerm = searchInput.value.trim();
+            if (searchTerm) {
+                fetchMovies(searchTerm)
+            }
+        }
+    })
+}
+
 function fetchMovies(searchTerm) {
     fetch(`https://www.omdbapi.com/?apikey=${apiKey}&s=${encodeURIComponent(searchTerm)}`)
         .then(response => response.json())
