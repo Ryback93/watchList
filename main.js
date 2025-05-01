@@ -105,7 +105,6 @@ function renderMovies(movies) {
             const plot = document.createElement("p")
             plot.textContent = details.Plot
             plot.style.marginTop = "10px"
-            // plot.style.fontSize = "10px"
 
             infoDiv.append(title, meta, button, plot)
             movieCard.append(poster, infoDiv)
@@ -230,13 +229,13 @@ function addToWatchlist(imdbID, button) {
     const userId = "defaultUser";
     const watchlistRef = ref(database, `watchlists/${userId}/${imdbID}`);
 
-    // Visual feedback immediately
+    
     button.classList.add('added');
     button.textContent = '✓ Added';
     
     set(watchlistRef, true)
         .then(() => {
-            // Keep the visual state for 2 seconds
+            
             setTimeout(() => {
                 button.classList.remove('added');
                 button.textContent = '+ Watchlist';
